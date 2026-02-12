@@ -1,0 +1,100 @@
+:root {
+  color-scheme: light;
+  --bg: #f4f4f0;
+  --card: #ffffff;
+  --text: #13151a;
+  --muted: #5f6470;
+  --accent: #0f766e;
+  --danger: #b91c1c;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: "Segoe UI", "Noto Sans KR", sans-serif;
+  color: var(--text);
+  background:
+    radial-gradient(circle at 20% 20%, #d6f7f0 0%, transparent 40%),
+    radial-gradient(circle at 80% 0%, #fff2cc 0%, transparent 35%),
+    var(--bg);
+}
+
+a {
+  color: inherit;
+}
+
+.container {
+  width: min(880px, 92vw);
+  margin: 0 auto;
+  padding: 24px 0 64px;
+}
+
+.card {
+  background: var(--card);
+  border: 1px solid #e8eaf0;
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 8px 24px rgba(13, 21, 36, 0.06);
+}
+
+.row {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.btn {
+  display: inline-block;
+  border: 0;
+  border-radius: 10px;
+  background: var(--accent);
+  color: #fff;
+  padding: 10px 14px;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.btn.secondary {
+  background: #334155;
+}
+
+.btn.danger {
+  background: var(--danger);
+}
+
+input,
+select {
+  width: 100%;
+  border: 1px solid #d5dae5;
+  border-radius: 10px;
+  padding: 10px;
+  background: #fff;
+}
+
+label {
+  display: block;
+  margin: 10px 0 6px;
+  font-weight: 600;
+}
+
+.muted {
+  color: var(--muted);
+}
+
+.progress {
+  height: 10px;
+  width: 100%;
+  border-radius: 999px;
+  background: #e7ebf2;
+  overflow: hidden;
+}
+
+.progress > div {
+  height: 100%;
+  background: linear-gradient(90deg, #0f766e, #06b6d4);
+}
+
