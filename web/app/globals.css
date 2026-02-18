@@ -1,100 +1,150 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@font-face {
+  font-family: "Noto Sans KR PDF";
+  src: url("/fonts/NotoSansKR-Variable.ttf") format("truetype");
+  font-style: normal;
+  font-weight: 100 900;
+}
+
 :root {
   color-scheme: light;
-  --bg: #f4f4f0;
-  --card: #ffffff;
-  --text: #13151a;
-  --muted: #5f6470;
-  --accent: #0f766e;
-  --danger: #b91c1c;
 }
 
 * {
   box-sizing: border-box;
 }
 
+html,
 body {
   margin: 0;
-  font-family: "Segoe UI", "Noto Sans KR", sans-serif;
-  color: var(--text);
-  background:
-    radial-gradient(circle at 20% 20%, #d6f7f0 0%, transparent 40%),
-    radial-gradient(circle at 80% 0%, #fff2cc 0%, transparent 35%),
-    var(--bg);
+  min-height: 100%;
+}
+
+body {
+  @apply bg-[#fcfcfb] text-[#111111] antialiased;
 }
 
 a {
-  color: inherit;
+  @apply text-inherit no-underline;
 }
 
-.container {
-  width: min(880px, 92vw);
-  margin: 0 auto;
-  padding: 24px 0 64px;
-}
-
-.card {
-  background: var(--card);
-  border: 1px solid #e8eaf0;
-  border-radius: 16px;
-  padding: 20px;
-  box-shadow: 0 8px 24px rgba(13, 21, 36, 0.06);
-}
-
-.row {
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-}
-
-.btn {
-  display: inline-block;
-  border: 0;
-  border-radius: 10px;
-  background: var(--accent);
-  color: #fff;
-  padding: 10px 14px;
-  font-weight: 600;
-  cursor: pointer;
-  text-decoration: none;
-}
-
-.btn.secondary {
-  background: #334155;
-}
-
-.btn.danger {
-  background: var(--danger);
-}
-
+button,
 input,
 select {
-  width: 100%;
-  border: 1px solid #d5dae5;
-  border-radius: 10px;
-  padding: 10px;
-  background: #fff;
+  font: inherit;
 }
 
-label {
+@media print {
+  html,
+  body,
+  body * {
+    font-family: "Noto Sans KR PDF", "Malgun Gothic", sans-serif !important;
+  }
+}
+
+@layer components {
+  .section-space {
+    @apply py-16 sm:py-24;
+  }
+
+  .btn-primary {
+    @apply inline-flex items-center justify-center rounded-sm bg-[#111111] px-5 py-3 text-sm font-medium text-white transition-colors hover:bg-[#2b2b2b] disabled:cursor-not-allowed disabled:opacity-60;
+  }
+
+  .btn-text {
+    @apply text-sm text-[#4b4b4b] underline underline-offset-4 transition-colors hover:text-[#111111];
+  }
+
+  .input-minimal {
+    @apply w-full border border-[#d7d7d3] bg-white px-3 py-2.5 text-sm text-[#111111] outline-none transition-colors focus:border-[#111111];
+  }
+}
+
+@layer utilities {
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .snap-always {
+    scroll-snap-stop: always;
+  }
+}
+
+.report-radial-glow {
+  background: radial-gradient(
+    circle at 50% 15%,
+    rgba(120, 0, 255, 0.12),
+    transparent 60%
+  );
+}
+
+.report-bg-fade {
+  transition: opacity 650ms ease-out;
+}
+
+.report-noise {
+  opacity: 0.04;
+  background-image: radial-gradient(rgba(255, 255, 255, 0.24) 0.6px, transparent 0.6px);
+  background-size: 3px 3px;
+}
+
+.section-card-transition {
+  transition: opacity 400ms ease-out, transform 400ms ease-out, border-color 300ms ease, background-color 300ms ease;
+}
+
+.section-label {
+  opacity: 0.5;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  font-variant-caps: all-small-caps;
+  font-size: 0.72rem;
+  color: #bac0d8;
+}
+
+.section-title {
+  font-family: serif;
+  line-height: 1.06;
+  color: #f2f3fb;
+  font-size: clamp(2rem, 4vw, 3.2rem);
+}
+
+.section-title-line {
   display: block;
-  margin: 10px 0 6px;
-  font-weight: 600;
+  font-weight: 500;
 }
 
-.muted {
-  color: var(--muted);
+.section-title-emphasis {
+  display: block;
+  margin-top: 0.2em;
+  font-weight: 800;
+  font-size: 1.07em;
+  letter-spacing: 0.03em;
 }
 
-.progress {
-  height: 10px;
-  width: 100%;
-  border-radius: 999px;
-  background: #e7ebf2;
-  overflow: hidden;
+.highlight {
+  background-image: linear-gradient(90deg, #7f00ff, #ff3cac);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  transition: filter 240ms ease;
 }
 
-.progress > div {
-  height: 100%;
-  background: linear-gradient(90deg, #0f766e, #06b6d4);
+.highlight:hover {
+  filter: brightness(1.05);
 }
 
+@media (prefers-reduced-motion: reduce) {
+  .report-bg-fade,
+  .section-card-transition,
+  .highlight {
+    transition: none !important;
+  }
+}

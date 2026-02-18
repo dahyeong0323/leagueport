@@ -67,8 +67,13 @@ npm run dev
 루트 `.env.example` 참고:
 - `RIOT_API_KEY`
 - `OPENAI_API_KEY`
+- `OPENAI_MODEL` (optional, default: `gpt-5-mini`)
+- `OPENAI_MAX_OUTPUT_TOKENS` (optional, default: `2000`)
 - `DATABASE_URL`
 - `NEXT_PUBLIC_API_BASE_URL`
+
+OpenAI 호출은 Responses API(`client.responses.create`)를 사용하며, GPT-5 mini 호환을 위해
+`temperature`/`top_p`/`logprobs`는 전달하지 않습니다.
 
 ## curl end-to-end 테스트
 1. create
@@ -95,3 +100,10 @@ curl "http://localhost:8000/report?report_id=<REPORT_ID>"
 4. `/generating/[report_id]`에서 진행률 확인
 5. 완료 시 `/report/[report_id]` 렌더 확인
 6. 실패 상태에서는 실패 메시지/다시 시도 버튼 확인
+
+## Step 3.1 스냅 UX 수동 체크리스트
+- 트랙패드 관성 스크롤 시 강제 점프/잠금 없이 자연스럽게 스냅되는지 확인
+- 마우스 휠 스크롤 시 섹션 단위로 자연스럽게 스냅되는지 확인
+- 모바일 터치 스크롤에서 스냅이 유지되고 스크롤 트래핑이 없는지 확인
+- 우측 도트 버튼이 Tab으로 포커스되고 Enter/Space로 섹션 이동되는지 확인
+- `← 메인으로 돌아가기` 동작 후 다른 페이지 스크롤이 정상인지 확인

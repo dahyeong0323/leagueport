@@ -8,7 +8,7 @@ type RequestOptions = {
 
 export type CreateReportBody = {
   riot_id: string;
-  region: string;
+  region: "EUW" | "KR";
   tone: "funny" | "roast" | "sweet";
   language: string;
 };
@@ -30,6 +30,10 @@ export type ReportResponse = {
     created_at: string;
     tone: string;
     language: string;
+    data_source: "riot" | "fallback";
+    riot_error: string | null;
+    matches_fetched: number;
+    puuid: string | null;
   };
 };
 
@@ -65,7 +69,7 @@ async function fetchWithTimeout<T>(path: string, options: RequestOptions = {}): 
     return (await response.json()) as T;
   } catch (error) {
     if (error instanceof Error && error.name === "AbortError") {
-      throw new Error("요청 시간이 초과되었습니다. 잠시 후 다시 시도해주세요.");
+      throw new Error("Request timed out. Please retry.");
     }
     throw error;
   } finally {

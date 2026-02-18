@@ -1,14 +1,11 @@
 import json
+from datetime import datetime, timezone
 from typing import Any
 
-from sqlalchemy import desc, select
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.models import ReportJob
-
-
-def make_cache_key(riot_id: str, region: str, tone: str, language: str) -> str:
-    return f"{riot_id.strip().lower()}::{region.strip().upper()}::{tone}::{language}"
 
 
 def create_job(
@@ -18,7 +15,6 @@ def create_job(
     region: str,
     tone: str,
     language: str,
-    cache_key: str,
 ) -> ReportJob:
     job = ReportJob(
         report_id=report_id,
@@ -28,17 +24,13 @@ def create_job(
         language=language,
         status="queued",
         progress=0,
-        cache_key=cache_key,
+        created_at=datetime.now(timezone.utc),
+        updated_at=datetime.now(timezone.utc),
     )
     db.add(job)
     db.commit()
     db.refresh(job)
     return job
-
-
-def find_done_cache(db: Session, cache_key: str) -> ReportJob | None:
-    stmt = select(ReportJob).where(ReportJob.cache_key == cache_key, ReportJob.status == "done").order_by(desc(ReportJob.created_at))
-    return db.execute(stmt).scalars().first()
 
 
 def get_job(db: Session, report_id: str) -> ReportJob | None:
@@ -69,24 +61,3 @@ def store_report(db: Session, report_id: str, sections: list[dict[str, Any]], su
     job.games_analyzed = games_analyzed
     db.add(job)
     db.commit()
-
-
-def clone_done_into_new_job(db: Session, source_job: ReportJob, new_report_id: str, cache_key: str) -> ReportJob:
-    clone = ReportJob(
-        report_id=new_report_id,
-        riot_id=source_job.riot_id,
-        region=source_job.region,
-        tone=source_job.tone,
-        language=source_job.language,
-        status="done",
-        progress=100,
-        error=None,
-        sections_json=source_job.sections_json,
-        summary_json=source_job.summary_json,
-        games_analyzed=source_job.games_analyzed,
-        cache_key=cache_key,
-    )
-    db.add(clone)
-    db.commit()
-    db.refresh(clone)
-    return clone

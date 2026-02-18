@@ -33,6 +33,10 @@ class ReportMeta(BaseModel):
     created_at: str
     tone: str
     language: str
+    data_source: Literal["riot", "fallback", "failed"]
+    riot_error: str | None = None
+    matches_fetched: int = 0
+    puuid: str | None = None
 
 
 class ReportResponse(BaseModel):

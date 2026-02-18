@@ -18,6 +18,5 @@ class ReportJob(Base):
     sections_json = Column(Text, nullable=True)
     summary_json = Column(Text, nullable=True)
     games_analyzed = Column(Integer, nullable=False, default=0)
-    cache_key = Column(String(160), nullable=True, index=True)
     created_at = Column(DateTime(timezone=True), nullable=False, server_default=func.now())
     updated_at = Column(DateTime(timezone=True), nullable=False, server_default=func.now(), onupdate=func.now())
