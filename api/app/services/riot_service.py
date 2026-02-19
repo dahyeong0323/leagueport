@@ -15,7 +15,7 @@ class RiotRegionRouting:
 
 RIOT_REGION_MAP: dict[str, RiotRegionRouting] = {
     "EUW": RiotRegionRouting(platform="euw1", routing="europe"),
-    "KR": RiotRegionRouting(platform="kr", routing="asia"),
+    "KR": RiotRegionRouting(platform="kr1", routing="asia"),
 }
 ALLOWED_REGIONS = tuple(RIOT_REGION_MAP.keys())
 ALLOWED_REGIONS_TEXT = ", ".join(ALLOWED_REGIONS)
@@ -26,15 +26,15 @@ class RiotApiError(Exception):
 
 
 class RiotIdParseError(RiotApiError):
-    pass
+    status_code = 400
 
 
 class RiotUserInputError(RiotApiError):
-    pass
+    status_code = 400
 
 
 class RiotUpstreamError(RiotApiError):
-    pass
+    status_code = 502
 
 
 @dataclass
@@ -77,9 +77,12 @@ async def _request_with_retry(
         logger.info("riot request attempt=%s method=%s url=%s", attempt, method, url)
         try:
             response = await client.request(method, url, headers=headers)
-        except Exception:
+        except Exception as exc:
             logger.exception("riot request exception attempt=%s method=%s url=%s", attempt, method, url)
-            raise
+            logger.error("metric=riot_upstream_failure kind=request_exception method=%s url=%s", method, url)
+            raise RiotUpstreamError(
+                f"Riot request exception (method={method}, url={url}, error={exc})"
+            ) from exc
         last_response = response
         logger.info("riot response status=%s url=%s", response.status_code, url)
         if response.status_code != 200:
@@ -101,6 +104,12 @@ async def _request_with_retry(
 
 
 def _upstream_error(label: str, response: httpx.Response) -> RiotUpstreamError:
+    logger.error(
+        "metric=riot_upstream_failure kind=non_200 label=%s status=%s url=%s",
+        label,
+        response.status_code,
+        response.request.url,
+    )
     return RiotUpstreamError(
         f"{label} failed (status={response.status_code}, url={response.request.url}, body={response.text})"
     )
@@ -203,6 +212,11 @@ async def fetch_riot_summary(riot_id: str, region: str, riot_api_key: str, max_g
                             detail_url,
                             res.status_code,
                             res.text,
+                        )
+                        logger.error(
+                            "metric=riot_upstream_failure kind=match_detail_non_200 match_id=%s status=%s",
+                            match_id,
+                            res.status_code,
                         )
                         return None
                     return res.json()

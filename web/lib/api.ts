@@ -23,6 +23,7 @@ export type ReportResponse = {
   status: "done";
   report_id: string;
   sections: Array<{ title: string; content_markdown: string }>;
+  generation_warning?: string | null;
   meta: {
     riot_id: string;
     region: string;

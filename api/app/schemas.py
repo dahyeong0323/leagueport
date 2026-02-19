@@ -44,3 +44,4 @@ class ReportResponse(BaseModel):
     report_id: str
     sections: list[ReportSection]
     meta: ReportMeta
+    generation_warning: str | None = None

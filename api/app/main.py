@@ -97,31 +97,47 @@ def _run_report_pipeline(report_id: str) -> None:
             update_status(db, report_id, status="processing", progress=35)
             if not settings.riot_api_key:
                 logger.error("riot fetch unavailable report_id=%s reason=RIOT_API_KEY missing", report_id)
-                update_status(db, report_id, status="failed", progress=100, error="RIOT_API_KEY is missing.")
+                logger.error("metric=riot_upstream_failure report_id=%s reason=missing_api_key", report_id)
+                update_status(
+                    db,
+                    report_id,
+                    status="failed",
+                    progress=100,
+                    error="502 Bad Gateway: Riot API unavailable (RIOT_API_KEY is missing).",
+                )
                 return
             else:
                 try:
                     summary = asyncio.run(fetch_riot_summary(job.riot_id, job.region, settings.riot_api_key))
                 except RiotIdParseError as exc:
                     logger.exception("riot id parse error report_id=%s error=%s", report_id, exc)
-                    update_status(db, report_id, status="failed", progress=100, error=str(exc))
+                    update_status(db, report_id, status="failed", progress=100, error=f"400 Bad Request: {exc}")
                     return
                 except RiotUserInputError as exc:
                     logger.exception("riot user input error report_id=%s error=%s", report_id, exc)
-                    update_status(db, report_id, status="failed", progress=100, error=str(exc))
+                    update_status(db, report_id, status="failed", progress=100, error=f"400 Bad Request: {exc}")
                     return
                 except RiotUpstreamError as exc:
                     logger.exception("riot upstream error report_id=%s error=%s", report_id, exc)
-                    update_status(db, report_id, status="failed", progress=100, error=f"Riot API fetch failed: {exc}")
+                    logger.error("metric=riot_upstream_failure report_id=%s error=%s", report_id, exc)
+                    update_status(
+                        db,
+                        report_id,
+                        status="failed",
+                        progress=100,
+                        error=f"502 Bad Gateway: Riot API fetch failed: {exc}",
+                    )
                     return
 
             update_status(db, report_id, status="processing", progress=70)
-            sections = generate_sections(
+            sections, generation_warning = generate_sections(
                 summary,
                 tone=job.tone,
                 language=job.language,
                 openai_api_key=settings.openai_api_key,
             )
+            if generation_warning:
+                summary = {**summary, "generation_warning": generation_warning}
 
             update_status(db, report_id, status="processing", progress=90)
             store_report(
@@ -153,6 +169,8 @@ def create_report(payload: CreateReportRequest, db: Session = Depends(get_db)):
         canonical_region = normalize_region(payload.region)
     except RiotUserInputError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
+    if not settings.riot_api_key:
+        raise HTTPException(status_code=502, detail="Riot API unavailable (RIOT_API_KEY is missing).")
 
     report_id = str(uuid.uuid4())
 
@@ -201,4 +219,10 @@ def report(report_id: str = Query(...), db: Session = Depends(get_db)):
         matches_fetched=int(summary.get("matches_fetched", 0)),
         puuid=summary.get("puuid"),
     )
-    return ReportResponse(status="done", report_id=job.report_id, sections=sections, meta=meta)
+    return ReportResponse(
+        status="done",
+        report_id=job.report_id,
+        sections=sections,
+        meta=meta,
+        generation_warning=summary.get("generation_warning"),
+    )
