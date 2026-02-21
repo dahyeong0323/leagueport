@@ -77,6 +77,11 @@ async def _request_with_retry(
     for attempt in range(1, max_attempts + 1):
         logger.info("riot request attempt=%s method=%s url=%s", attempt, method, url)
         try:
+            import os
+            key = os.getenv("RIOT_API_KEY", "")
+            print("🔥 RIOT CALL START")
+            print(f"[RIOT DEBUG] present={bool(key)} len={len(key)} prefix={key[:5]}")
+            headers = {"X-Riot-Token": key}
             response = await client.request(method, url, headers=headers)
         except Exception as exc:
             logger.exception("riot request exception attempt=%s method=%s url=%s", attempt, method, url)
@@ -101,7 +106,14 @@ async def _request_with_retry(
         wait = float(retry_after) if retry_after else delay
         await asyncio.sleep(wait)
         delay = min(delay * 2, 8.0)
-    return last_response if last_response else await client.request(method, url, headers=headers)
+    if last_response:
+        return last_response
+    import os
+    key = os.getenv("RIOT_API_KEY", "")
+    print("🔥 RIOT CALL START")
+    print(f"[RIOT DEBUG] present={bool(key)} len={len(key)} prefix={key[:5]}")
+    headers = {"X-Riot-Token": key}
+    return await client.request(method, url, headers=headers)
 
 
 def _upstream_error(label: str, response: httpx.Response) -> RiotUpstreamError:
