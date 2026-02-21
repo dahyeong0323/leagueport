@@ -1,6 +1,7 @@
 import asyncio
 from dataclasses import dataclass
 import logging
+import os
 from statistics import mean
 from typing import Any
 
@@ -159,7 +160,9 @@ async def fetch_riot_summary(riot_id: str, region: str, riot_api_key: str, max_g
         region_info.routing,
     )
 
-    headers = {"X-Riot-Token": riot_api_key}
+    key = os.getenv("RIOT_API_KEY", "")
+    print(f"[RIOT DEBUG] present={bool(key)} len={len(key)} prefix={key[:5]}")
+    headers = {"X-Riot-Token": key}
     timeout = httpx.Timeout(20.0, read=20.0)
 
     try:
